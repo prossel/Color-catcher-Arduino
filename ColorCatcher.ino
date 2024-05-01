@@ -21,18 +21,17 @@
 
 #include <Arduino_LSM9DS1.h>
 
-const int ledPin = LED_BUILTIN;  // set ledPin to on-board LED
-const int buttonPin = 4;         // set buttonPin to digital pin 4
+const int ledPin = LED_BUILTIN; // set ledPin to on-board LED
+const int buttonPin = 4;        // set buttonPin to digital pin 4
 
-BLEService ledService("19B10010-E8F2-537E-4F6C-D104768A1214");  // create service
+BLEService ledService("19B10010-E8F2-537E-4F6C-D104768A1214"); // create service
 
 // create switch characteristic and allow remote device to read and write
 BLEByteCharacteristic ledCharacteristic("19B10011-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite);
 // create button characteristic and allow remote device to get notifications
 BLEByteCharacteristic buttonCharacteristic("19B10012-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify);
 
-
-#include "States.h"
+#include "AppStates.h"
 
 StateMachine sm;
 
@@ -46,11 +45,12 @@ void setup()
   Serial.println("Started");
 
   // GPIO
-  pinMode(ledPin, OUTPUT);           // use the LED as an output
-  pinMode(buttonPin, INPUT_PULLUP);  // use button pin as an input
+  pinMode(ledPin, OUTPUT);          // use the LED as an output
+  pinMode(buttonPin, INPUT_PULLUP); // use button pin as an input
 
   // Accelerometer
-  if (!IMU.begin()) {
+  if (!IMU.begin())
+  {
     Serial.println("Failed to initialize IMU!");
     while (1)
       ;
@@ -61,7 +61,8 @@ void setup()
   Serial.println("Hz");
 
   // begin initialization
-  if (!BLE.begin()) {
+  if (!BLE.begin())
+  {
     Serial.println("starting Bluetooth® Low Energy module failed!");
 
     while (1)
@@ -94,7 +95,8 @@ void setup()
   sm.changeState(new StateIdle());
 }
 
-void loop() {
+void loop()
+{
   // poll for Bluetooth® Low Energy events
   BLE.poll();
 
@@ -104,18 +106,23 @@ void loop() {
   // has the value changed since the last read
   bool buttonChanged = (buttonCharacteristic.value() != buttonValue);
 
-  if (buttonChanged) {
+  if (buttonChanged)
+  {
     // button state changed, update characteristics
     ledCharacteristic.writeValue(buttonValue);
     buttonCharacteristic.writeValue(buttonValue);
   }
 
-  if (ledCharacteristic.written() || buttonChanged) {
+  if (ledCharacteristic.written() || buttonChanged)
+  {
     // update LED, either central has written to characteristic or button state has changed
-    if (ledCharacteristic.value()) {
+    if (ledCharacteristic.value())
+    {
       Serial.println("LED on");
       digitalWrite(ledPin, HIGH);
-    } else {
+    }
+    else
+    {
       Serial.println("LED off");
       digitalWrite(ledPin, LOW);
     }

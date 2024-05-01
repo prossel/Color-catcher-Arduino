@@ -1,3 +1,4 @@
+
 State *checkSerial()
 {
   if (Serial.available() > 0)
