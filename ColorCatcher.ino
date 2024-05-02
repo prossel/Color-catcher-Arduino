@@ -31,6 +31,9 @@ BLEByteCharacteristic ledCharacteristic("19B10011-E8F2-537E-4F6C-D104768A1214", 
 // create button characteristic and allow remote device to get notifications
 BLEByteCharacteristic buttonCharacteristic("19B10012-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify);
 
+// create move characteristic and allow remote device to get notifications
+BLEByteCharacteristic moveCharacteristic("19B10013-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify);
+
 #include "AppStates.h"
 
 StateMachine sm;
@@ -80,19 +83,21 @@ void setup()
   // add the characteristics to the service
   ledService.addCharacteristic(ledCharacteristic);
   ledService.addCharacteristic(buttonCharacteristic);
+  ledService.addCharacteristic(moveCharacteristic);
 
   // add the service
   BLE.addService(ledService);
 
   ledCharacteristic.writeValue(0);
   buttonCharacteristic.writeValue(0);
+  moveCharacteristic.writeValue(0); 
 
   // start advertising
   BLE.advertise();
 
   Serial.println("Bluetooth® device active, waiting for connections...");
 
-  sm.changeState(new StateIdle());
+  sm.changeState(new StatePlay());
 }
 
 void loop()
@@ -134,94 +139,3 @@ void loop()
 
   sm.loop();
 }
-
-// void dumpAccelerometer() {
-//   // read accelerometer
-//   float x, y, z;
-//   if (IMU.accelerationAvailable()) {
-
-//     IMU.readAcceleration(x, y, z);
-
-//     Serial.print("X:");
-//     Serial.print(x);
-//     Serial.print("\t");
-//     Serial.print("Y:");
-//     Serial.print(y);
-//     Serial.print("\t");
-//     Serial.print("Z:");
-//     Serial.println(z);
-//   }
-// }
-
-// void cycleRGBLed() {
-//   static unsigned long lastUpdate = 0;
-//   static int hue = 0;
-//   static int saturation = 100;
-//   static int brightness = 100;
-
-//   // if last update time is not set, or the difference between now and last update time is greater than 3 seconds
-//   if (lastUpdate == 0 || millis() - lastUpdate > 10) {
-//     lastUpdate = millis();
-
-//     // convert hue to RGB
-//     int r, g, b;
-//     HSBtoRGB(hue, saturation, brightness, r, g, b);
-
-//     // set the RGB LED
-//     analogWrite(LEDR, 255 - r);
-//     analogWrite(LEDG, 255 - g);
-//     analogWrite(LEDB, 255 - b);
-
-//     // increase the hue by 1
-//     hue++;
-
-//     // reset the hue after it reaches 360
-//     if (hue >= 360) {
-//       hue = 0;
-//     }
-//   }
-// }
-
-// // convert hue, saturation and brightness to RGB
-// // hue: 0-360, saturation: 0-100, brightness: 0-100
-// // r, g, b: 0-255
-// void HSBtoRGB(int hue, int saturation, int brightness, int &r, int &g, int &b) {
-//   int h = round(hue / 60.0);
-//   int s = round(saturation / 100.0 * 255);
-//   int v = round(brightness / 100.0 * 255);
-
-//   int c = s * v / 255;
-//   int x = c * (1 - abs((h % 2) - 1));
-//   int m = v - c;
-
-//   int r1, g1, b1;
-//   if (h == 0) {
-//     r1 = c;
-//     g1 = x;
-//     b1 = 0;
-//   } else if (h == 1) {
-//     r1 = x;
-//     g1 = c;
-//     b1 = 0;
-//   } else if (h == 2) {
-//     r1 = 0;
-//     g1 = c;
-//     b1 = x;
-//   } else if (h == 3) {
-//     r1 = 0;
-//     g1 = x;
-//     b1 = c;
-//   } else if (h == 4) {
-//     r1 = x;
-//     g1 = 0;
-//     b1 = c;
-//   } else if (h == 5) {
-//     r1 = c;
-//     g1 = 0;
-//     b1 = x;
-//   }
-
-//   r = r1 + m;
-//   g = g1 + m;
-//   b = b1 + m;
-// }
