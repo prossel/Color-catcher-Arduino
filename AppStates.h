@@ -8,6 +8,8 @@
 class StateIdle : public State
 {
 
+  float aXEnter, aYEnter, aZEnter = 0;
+
   void enter();
 
   // Loop is declared here, but implemented below, after the declaration of other states

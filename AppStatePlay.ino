@@ -116,6 +116,13 @@ State *StatePlay::loop()
       lastMoving = currentMillis;
     }
 
+    // switch to the StateIdle if the device is not moving
+    if (currentMillis > lastMoving + 10000 && getStateTime() > 10000)
+    {
+      return new StateIdle();
+    }
+
+
     if (currentMillis < lastMoving + 100)
     {
       Serial.print("min:-2\tmax:2\t");
