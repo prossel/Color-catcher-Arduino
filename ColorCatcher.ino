@@ -52,15 +52,15 @@ uint8_t rgb_values[3];
 
 
 
-BLEService ledService("19B10010-E8F2-537E-4F6C-D104768A1214"); // create service
+BLEService ledService("85fa19a3-1000-4cd4-940c-3c038c9aa250"); // create service
 
 // create switch characteristic and allow remote device to read and write
-BLEByteCharacteristic ledCharacteristic("19B10011-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite);
+BLEByteCharacteristic ledCharacteristic("85fa19a3-1001-4cd4-940c-3c038c9aa250", BLERead | BLEWrite);
 // create button characteristic and allow remote device to get notifications
-BLEByteCharacteristic buttonCharacteristic("19B10012-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify);
+BLEByteCharacteristic buttonCharacteristic("85fa19a3-1002-4cd4-940c-3c038c9aa250", BLERead | BLENotify);
 
 // create move characteristic and allow remote device to get notifications
-BLEByteCharacteristic moveCharacteristic("19B10013-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify);
+BLEByteCharacteristic moveCharacteristic("85fa19a3-1003-4cd4-940c-3c038c9aa250", BLERead | BLENotify);
 
 #include "AppStates.h"
 
