@@ -58,8 +58,7 @@ const int batteryPin = A6;
 float batteryVoltage = 0;
 int batteryLevel = 0; // 0-100
 
-
-// create a BLE service
+// create a BLE service for the catcher
 BLEService ledService("85fa19a3-1000-4cd4-940c-3c038c9aa250"); // create service
 
 // create switch characteristic and allow remote device to read and write
@@ -69,6 +68,13 @@ BLEByteCharacteristic buttonCharacteristic("85fa19a3-1002-4cd4-940c-3c038c9aa250
 
 // create move characteristic and allow remote device to get notifications
 BLEByteCharacteristic moveCharacteristic("85fa19a3-1003-4cd4-940c-3c038c9aa250", BLERead | BLENotify);
+
+// create a BLE service for the battery
+BLEService batteryService("180F"); // create service
+
+BLEUnsignedCharCharacteristic batteryLevelChar("2A19",  // standard 16-bit characteristic UUID
+    BLERead | BLENotify); // remote clients will be able to get notifications if this characteristic changes
+
 
 #include "AppStates.h"
 
@@ -127,6 +133,14 @@ void setup()
   ledCharacteristic.writeValue(0);
   buttonCharacteristic.writeValue(0);
   moveCharacteristic.writeValue(0); 
+
+  // Battery service
+  BLE.setAdvertisedService(batteryService); // add the service UUID
+
+  batteryService.addCharacteristic(batteryLevelChar); // add the battery level characteristic
+  BLE.addService(batteryService); // Add the battery service
+  batteryLevelChar.writeValue(oldBatteryLevel); // set initial value for this characteristic
+
 
   // start advertising
   BLE.advertise();
@@ -217,6 +231,7 @@ void readBatteryLevel()
   if (millis() - lastUpdate > 5000)
   {
     lastUpdate = millis();
+
     Serial.print("Battery voltage: ");
     Serial.print(batteryVoltage);
     Serial.print("V, ");
@@ -229,6 +244,8 @@ void readBatteryLevel()
     Serial.print("Battery level: ");
     Serial.print(batteryLevel);
     Serial.println("%");
-    return;
+
+    // update the battery level characteristic
+    batteryLevelChar.writeValue(batteryLevel);
   }
 }
