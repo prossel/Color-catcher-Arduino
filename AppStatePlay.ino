@@ -30,6 +30,16 @@ State *StatePlay::loop()
     float gX, gY, gZ;
     IMU.readGyroscope(gX, gY, gZ);
 
+    // Send the data to the monitor characteristic every 100 ms
+    static unsigned long lastMonitor = 0;
+    if (currentMillis > lastMonitor + 100)
+    {
+      lastMonitor = currentMillis;
+
+      String data = String(aX) + "," + String(aY) + "," + String(aZ) + "," + String(gX) + "," + String(gY) + "," + String(gZ);  
+      monitorCharacteristic.writeValue(data);
+    }
+
     // filter the acceleration
     float alphaFast = 0.6;
     float alphaSlow = 0.95;

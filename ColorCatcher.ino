@@ -52,7 +52,7 @@ uint8_t rgb_values[3];
 
 // Battery pin. The battery level is read from this pin
 // The max voltage is 3.3V, so the max value is 1023
-// The maximum battery level is 4.2V and 
+// The maximum battery level is 4.2V and
 // there is a voltage divider that divides the voltage by 1.33
 const int batteryPin = A6;
 float batteryVoltage = 0;
@@ -68,11 +68,17 @@ BLEByteCharacteristic buttonCharacteristic("85fa19a3-1002-4cd4-940c-3c038c9aa250
 
 // create move characteristic and allow remote device to get notifications
 BLEByteCharacteristic moveCharacteristic("85fa19a3-1003-4cd4-940c-3c038c9aa250", BLERead | BLENotify);
+BLEDescriptor moveDescriptor("2901", "Move");
+
+// Create a BLE service for monitoring (like the serial monitor)
+BLEStringCharacteristic monitorCharacteristic("85fa19a3-1004-4cd4-940c-3c038c9aa250", BLERead | BLENotify, 60);
+BLEDescriptor buttonDescriptor("2901", "Monitor");
 
 // create a BLE service for the battery
 BLEService batteryService("180F"); // create service
 
-BLEUnsignedCharCharacteristic batteryLevelChar("2A19",  // standard 16-bit characteristic UUID
+BLEUnsignedCharCharacteristic batteryLevelChar(
+    "2A19",               // standard 16-bit characteristic UUID
     BLERead | BLENotify); // remote clients will be able to get notifications if this characteristic changes
 
 
@@ -126,21 +132,25 @@ void setup()
   ledService.addCharacteristic(ledCharacteristic);
   ledService.addCharacteristic(buttonCharacteristic);
   ledService.addCharacteristic(moveCharacteristic);
+  ledService.addCharacteristic(monitorCharacteristic);
+
+  // add the descriptor to the characteristic
+  moveCharacteristic.addDescriptor(moveDescriptor);
+  monitorCharacteristic.addDescriptor(buttonDescriptor);
 
   // add the service
   BLE.addService(ledService);
 
   ledCharacteristic.writeValue(0);
   buttonCharacteristic.writeValue(0);
-  moveCharacteristic.writeValue(0); 
+  moveCharacteristic.writeValue(0);
 
   // Battery service
   BLE.setAdvertisedService(batteryService); // add the service UUID
 
   batteryService.addCharacteristic(batteryLevelChar); // add the battery level characteristic
-  BLE.addService(batteryService); // Add the battery service
-  batteryLevelChar.writeValue(oldBatteryLevel); // set initial value for this characteristic
-
+  BLE.addService(batteryService);                     // Add the battery service
+  batteryLevelChar.writeValue(batteryLevel);       // set initial value for this characteristic
 
   // start advertising
   BLE.advertise();
@@ -207,11 +217,11 @@ void readBatteryLevel()
   static float averageVoltage = 0;
 
   // read the battery level
-  int   batteryLevelInt   = analogRead(batteryPin);
+  int batteryLevelInt = analogRead(batteryPin);
 
   // calculate the battery voltage
-  float batteryVoltage    = batteryLevelInt * 3.3 / 1023.0 * 1.33;
-  
+  float batteryVoltage = batteryLevelInt * 3.3 / 1023.0 * 1.33;
+
   // initial value
   if (averageVoltage < 0.1)
   {
@@ -224,8 +234,8 @@ void readBatteryLevel()
   // calculate the battery level without using map function.
   // 3.2V is the minimum voltage, 4.2V is the maximum voltage
   // 0% is the minimum battery level, 100% is the maximum battery level
-  batteryLevel =  (averageVoltage - 3.2) / (4.2 - 3.2) * 100;
-  
+  int newBatteryLevel = (averageVoltage - 3.2) / (4.2 - 3.2) * 100;
+
   // print the battery level every 5 seconds
   static unsigned long lastUpdate = 0;
   if (millis() - lastUpdate > 5000)
@@ -242,10 +252,16 @@ void readBatteryLevel()
     Serial.print(batteryLevelInt);
     Serial.print(", ");
     Serial.print("Battery level: ");
-    Serial.print(batteryLevel);
+    Serial.print(newBatteryLevel);
     Serial.println("%");
 
-    // update the battery level characteristic
-    batteryLevelChar.writeValue(batteryLevel);
+    // update the battery level characteristic if the value has changed
+    // if (newBatteryLevel != batteryLevel)
+    // {
+      batteryLevelChar.writeValue((unsigned char)newBatteryLevel);
+      // }
   }
+
+  // update the battery level
+  batteryLevel = newBatteryLevel;
 }
