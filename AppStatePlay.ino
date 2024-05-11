@@ -23,6 +23,9 @@ State *StatePlay::loop()
     float aX, aY, aZ;
     IMU.readAcceleration(aX, aY, aZ);
 
+    // Flip z axis because the sensor is finally mounted reversed in the object
+    aZ *= -1;
+
     // read gyroscope
     float gX, gY, gZ;
     IMU.readGyroscope(gX, gY, gZ);
