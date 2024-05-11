@@ -50,8 +50,16 @@ Adafruit_NeoPixel strip(12, stripPin, NEO_GRB + NEO_KHZ800);
 
 uint8_t rgb_values[3];
 
+// Battery pin. The battery level is read from this pin
+// The max voltage is 3.3V, so the max value is 1023
+// The maximum battery level is 4.2V and 
+// there is a voltage divider that divides the voltage by 1.33
+const int batteryPin = A6;
+float batteryVoltage = 0;
+int batteryLevel = 0; // 0-100
 
 
+// create a BLE service
 BLEService ledService("85fa19a3-1000-4cd4-940c-3c038c9aa250"); // create service
 
 // create switch characteristic and allow remote device to read and write
@@ -173,5 +181,54 @@ void loop()
 
   // dumpAccelerometer();
 
+  // read battery level
+  readBatteryLevel();
+
+  // Update the state machine
   sm.loop();
+}
+
+void readBatteryLevel()
+{
+  static float averageVoltage = 0;
+
+  // read the battery level
+  int   batteryLevelInt   = analogRead(batteryPin);
+
+  // calculate the battery voltage
+  float batteryVoltage    = batteryLevelInt * 3.3 / 1023.0 * 1.33;
+  
+  // initial value
+  if (averageVoltage < 0.1)
+  {
+    averageVoltage = batteryVoltage;
+  }
+
+  // average the battery voltage over time
+  averageVoltage = 0.99 * averageVoltage + 0.01 * batteryVoltage;
+
+  // calculate the battery level without using map function.
+  // 3.2V is the minimum voltage, 4.2V is the maximum voltage
+  // 0% is the minimum battery level, 100% is the maximum battery level
+  batteryLevel =  (averageVoltage - 3.2) / (4.2 - 3.2) * 100;
+  
+  // print the battery level every 5 seconds
+  static unsigned long lastUpdate = 0;
+  if (millis() - lastUpdate > 5000)
+  {
+    lastUpdate = millis();
+    Serial.print("Battery voltage: ");
+    Serial.print(batteryVoltage);
+    Serial.print("V, ");
+    Serial.print("Battery average voltage: ");
+    Serial.print(averageVoltage);
+    Serial.print("V, ");
+    Serial.print("Battery level int: ");
+    Serial.print(batteryLevelInt);
+    Serial.print(", ");
+    Serial.print("Battery level: ");
+    Serial.print(batteryLevel);
+    Serial.println("%");
+    return;
+  }
 }
