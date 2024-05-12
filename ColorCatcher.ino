@@ -155,7 +155,7 @@ void setup()
   moveCharacteristic.writeValue(0);
 
   // Battery service
-  BLE.setAdvertisedService(batteryService); // add the service UUID
+  //BLE.setAdvertisedService(batteryService); // do not advertise this service or the device will not be able to connect
 
   batteryService.addCharacteristic(batteryLevelChar); // add the battery level characteristic
   BLE.addService(batteryService);                     // Add the battery service
@@ -244,6 +244,7 @@ void readBatteryLevel()
   // 3.2V is the minimum voltage, 4.2V is the maximum voltage
   // 0% is the minimum battery level, 100% is the maximum battery level
   int newBatteryLevel = (averageVoltage - 3.2) / (4.2 - 3.2) * 100;
+  newBatteryLevel = constrain(newBatteryLevel, 0, 100);
 
   // print the battery level every 5 seconds
   static unsigned long lastUpdate = 0;
