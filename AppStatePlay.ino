@@ -26,20 +26,6 @@ State *StatePlay::loop()
     // Flip z axis because the sensor is finally mounted reversed in the object
     aZ *= -1;
 
-    // read gyroscope
-    float gX, gY, gZ;
-    IMU.readGyroscope(gX, gY, gZ);
-
-    // Send the data to the monitor characteristic every 100 ms
-    static unsigned long lastMonitor = 0;
-    if (currentMillis > lastMonitor + 100)
-    {
-      lastMonitor = currentMillis;
-
-      String data = String(aX) + "," + String(aY) + "," + String(aZ) + "," + String(gX) + "," + String(gY) + "," + String(gZ);  
-      monitorCharacteristic.writeValue(data);
-    }
-
     // filter the acceleration
     float alphaFast = 0.6;
     float alphaSlow = 0.95;
@@ -186,6 +172,45 @@ State *StatePlay::loop()
 
       Serial.println();
     }
+
+    // read gyroscope
+    float gX, gY, gZ;
+    IMU.readGyroscope(gX, gY, gZ);
+
+    // detect when the device has been rotating around x enough to accumulate enough energy to reset the device
+    static float resetEnergy = 0;
+    resetEnergy = 0.99 * resetEnergy + 0.01 * abs(gX);
+    
+    // Serial.print("resetEnergy:");
+    // Serial.println(resetEnergy);
+    // monitorCharacteristic.writeValue(String(resetEnergy));
+
+    static unsigned long lastResetMove = 0;
+    if (resetEnergy > 150 && currentMillis > lastResetMove + 100)
+    {
+      Serial.println(" Move detected_255");
+      
+      resetEnergy = 0;
+      lastResetMove = currentMillis;
+      moveCharacteristic.writeValue(255);
+    }
+
+    // Send the data to the monitor characteristic every 100 ms
+    static unsigned long lastMonitor = 0;
+    if (currentMillis > lastMonitor + 500)
+    {
+      lastMonitor = currentMillis;
+
+      // String data = String(aX) + "," + String(aY) + "," + String(aZ) + "," + String(gX) + "," + String(gY) + "," + String(gZ);  
+      
+      // monitor resetEnergy
+      String data = "resetEnergy: " + String(resetEnergy);
+
+      Serial.println(data);
+      monitorCharacteristic.writeValue(data);
+    }
+
+
   }
 
   delay(10);

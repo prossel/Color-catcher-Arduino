@@ -19,7 +19,16 @@
 
 #include <ArduinoBLE.h>
 
-#include <Arduino_LSM9DS1.h>
+// Uncomment the following line to use the Arduino Nano 33 BLE Sense Rev 2
+//#define REV2
+
+#ifdef REV2
+  // Arduino Nano 33 BLE Sense Rev 2 has an BMI270 and BMM150
+  #include "Arduino_BMI270_BMM150.h"
+#else 
+  // Original Arduino 33 BLE sense board has an LSM9DS1 IMU 
+  #include <Arduino_LSM9DS1.h>
+#endif
 
 #include <Adafruit_NeoPixel.h>
 
