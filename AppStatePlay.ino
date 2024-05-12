@@ -24,7 +24,7 @@ State *StatePlay::loop()
     IMU.readAcceleration(aX, aY, aZ);
 
     // Flip z axis because the sensor is finally mounted reversed in the object
-    aZ *= -1;
+    //aZ *= -1;
 
     // filter the acceleration
     float alphaFast = 0.6;
