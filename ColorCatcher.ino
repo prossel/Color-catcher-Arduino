@@ -36,8 +36,9 @@ const int ledPin = LED_BUILTIN; // set ledPin to on-board LED
 const int buttonPin = 4;        // set buttonPin to digital pin 4
 
 const int stripPin = A7;
+#define NB_LEDS 12
 
-Adafruit_NeoPixel strip(12, stripPin, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(NB_LEDS, stripPin, NEO_GRB + NEO_KHZ800);
 // Argument 1 = Number of pixels in NeoPixel strip
 // Argument 2 = Arduino pin number (most are valid)
 // Argument 3 = Pixel type flags, add together as needed:
@@ -294,6 +295,35 @@ void updateRingColorFromPalette()
     }
   }
   strip.show();
+}
+
+void cycleRingColorFromPalete() {
+  const int period = 500;
+
+  // every period, the whole ring takes the next color from the palette
+  static int iPalette = 0;
+  static unsigned long lastCycle = 0;
+  if (millis() > lastCycle + period)
+  {
+    lastCycle = millis();
+
+    // if next color is 0, 0, 0 restart at index 0
+    Color col = palette[iPalette];
+    if (col.r == 0 && col.g == 0 && col.b == 0) {
+      iPalette = 0;
+      col = palette[iPalette];
+    }
+
+    // all ring same color
+    for (int i = 0; i < NB_LEDS; i++)
+    {
+      strip.setPixelColor(i, strip.Color(col.r, col.g, col.b));
+    }
+    strip.show();
+
+    // next color
+    iPalette = (iPalette + 1) % 4;
+  }
 }
 
 void readBatteryLevel()

@@ -214,11 +214,9 @@ State *StatePlay::loop()
     }
   }
 
-  if (checkPaletteChanged())
-  {
-    // Update the ring color
-    updateRingColorFromPalette();
-  }
+  checkPaletteChanged();
+  
+  cycleRingColorFromPalete();
 
   delay(10);
 
