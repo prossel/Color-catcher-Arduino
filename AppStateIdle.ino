@@ -56,6 +56,8 @@ State *StateIdle::loop()
     return new StatePlay();
   }
 
+  delay(100);
+
   return checkSerial();
   // return getStateTime() > 5000 ? new StateGlow() : NULL;
 }

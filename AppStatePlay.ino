@@ -6,6 +6,7 @@
 void StatePlay::enter()
 {
   Serial.println(">>>>>>>>>>>>> StatePlay.enter()");
+  updateRingColorFromPalette();
 }
 
 State *StatePlay::loop()
@@ -24,7 +25,7 @@ State *StatePlay::loop()
     IMU.readAcceleration(aX, aY, aZ);
 
     // Flip z axis because the sensor is finally mounted reversed in the object
-    //aZ *= -1;
+    // aZ *= -1;
 
     // filter the acceleration
     float alphaFast = 0.6;
@@ -45,7 +46,7 @@ State *StatePlay::loop()
     float threshold = 0.25;
 
     // float angle = atan2(aY, aZSlow) * 180 / PI;
-    float angle = int(atan2(-aY, aZSlow) * 180 / PI + 360 ) % 360;
+    float angle = int(atan2(-aY, aZSlow) * 180 / PI + 360) % 360;
     // float angle = atan2(aZSlow, aY) * 180 / PI;
 
     // Detect a cross down high followed by a cross down low
@@ -121,8 +122,7 @@ State *StatePlay::loop()
       return new StateIdle();
     }
 
-
-    if (currentMillis < lastMoving + 100)
+    if (false && currentMillis < lastMoving + 100)
     {
       Serial.print("min:-2\tmax:2\t");
 
@@ -180,7 +180,7 @@ State *StatePlay::loop()
     // detect when the device has been rotating around x enough to accumulate enough energy to reset the device
     static float resetEnergy = 0;
     resetEnergy = 0.99 * resetEnergy + 0.01 * abs(gX);
-    
+
     // Serial.print("resetEnergy:");
     // Serial.println(resetEnergy);
     // monitorCharacteristic.writeValue(String(resetEnergy));
@@ -189,7 +189,7 @@ State *StatePlay::loop()
     if (resetEnergy > 150 && currentMillis > lastResetMove + 100)
     {
       Serial.println(" Move detected_255");
-      
+
       resetEnergy = 0;
       lastResetMove = currentMillis;
       moveCharacteristic.writeValue(255);
@@ -201,16 +201,23 @@ State *StatePlay::loop()
     {
       lastMonitor = currentMillis;
 
-      // String data = String(aX) + "," + String(aY) + "," + String(aZ) + "," + String(gX) + "," + String(gY) + "," + String(gZ);  
-      
-      // monitor resetEnergy
-      String data = "resetEnergy: " + String(resetEnergy);
+      // String data = String(aX) + "," + String(aY) + "," + String(aZ) + "," + String(gX) + "," + String(gY) + "," + String(gZ);
 
-      Serial.println(data);
-      monitorCharacteristic.writeValue(data);
+      // monitor resetEnergy if bigger than 50
+      if (false && resetEnergy > 50)
+      {
+        String data = "resetEnergy: " + String(resetEnergy);
+
+        Serial.println(data);
+        monitorCharacteristic.writeValue(data);
+      }
     }
+  }
 
-
+  if (checkPaletteChanged())
+  {
+    // Update the ring color
+    updateRingColorFromPalette();
   }
 
   delay(10);
