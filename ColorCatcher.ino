@@ -15,6 +15,10 @@
   created in this sketch.
 
   This example code is in the public domain.
+
+  Libraries to install from Arduino Library Manager:
+  - ArduinoBLE by Arduino
+  - Adafruit NeoPixel by Adafruit
 */
 
 #include <ArduinoBLE.h>
